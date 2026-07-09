@@ -1,22 +1,21 @@
 import service.TestDataHandler;
 import com.github.javafaker.Faker;
 import io.qameta.allure.Step;
-import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import model.User;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import service.UserApiClient;
 
 import java.util.Locale;
 import java.util.stream.Stream;
 
-import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-public class LoginUserTests {
+public class LoginUserTests extends RestAssuredTests {
 
     private static String email;
     private static String password;
@@ -25,11 +24,7 @@ public class LoginUserTests {
 
     Faker faker = new Faker(new Locale("ru"));
     static TestDataHandler tdh = new TestDataHandler();
-
-    @BeforeAll
-    static void setUp() {
-        RestAssured.baseURI = "https://stellarburgers.education-services.ru/";
-    }
+    UserApiClient userClient = new UserApiClient();
 
     @BeforeEach
     void prepareTestData() {
@@ -48,23 +43,8 @@ public class LoginUserTests {
     @DisplayName("Проверяю, что можно авторизоваться под существующим пользователем")
     void checkUserCanBeLoggedIn() {
         User body = new User(email, password);
-        Response loginResponse = sendLoginRequest(body);
+        Response loginResponse = userClient.loginUser(body);
         verifyUserAuthorized(loginResponse);
-    }
-
-    @Step("Отправка POST запроса на /api/auth/login")
-    private Response sendLoginRequest(User body) {
-        return given()
-                .header("Content-type", "application/json")
-                .body(body)
-                .post("/api/auth/login");
-    }
-
-    @Step("Проверка успешной авторизации пользователя: статус 200 и success=true")
-    private void verifyUserAuthorized(Response response) {
-        response.then()
-                .statusCode(SC_OK)
-                .assertThat().body("success", equalTo(true));
     }
 
     @ParameterizedTest
@@ -72,8 +52,15 @@ public class LoginUserTests {
     @DisplayName("Проверяю, что нельзя авторизоваться с неверным логином и паролем")
     void checkUserCanNotBeLoggedInWithWrongData(String email, String password) {
         User body = new User(email, password);
-        Response loginResponse = sendLoginRequest(body);
+        Response loginResponse = userClient.loginUser(body);
         verifyIncorrectUserDataUnauthorized(loginResponse);
+    }
+
+    @Step("Проверка успешной авторизации пользователя: статус 200 и success=true")
+    private void verifyUserAuthorized(Response response) {
+        response.then()
+                .statusCode(SC_OK)
+                .assertThat().body("success", equalTo(true));
     }
 
     @Step("Проверка ошибки при авторизации с неверным логином или паролем: статус 401 и success=false")

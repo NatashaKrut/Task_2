@@ -1,23 +1,14 @@
 package model;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Ingredients {
-
-    List<String> ingredients;
-
-    public List<String> getIngredients() {
-        return ingredients;
-    }
-
-    public void setIngredients(List<String> ingredients) {
-        this.ingredients = ingredients;
-    }
-
-    public Ingredients() {
-    }
-
-    public Ingredients(List<String> list) {
-        setIngredients(list);
-    }
+    private List<String> ingredients;
 }
