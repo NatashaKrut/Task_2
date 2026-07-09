@@ -1,3 +1,4 @@
+import service.RestAssuredTests;
 import service.TestDataHandler;
 import com.github.javafaker.Faker;
 import io.qameta.allure.Step;
